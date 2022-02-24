@@ -4,7 +4,11 @@ const CENTRAL_FILE_HEADER_TYPE = 0x02014b50;
 const END_CENTRAL_TYPE = 0x06054b50;
 
 
-const d = new TextDecoder('utf-8');
+const d = new TextDecoder();
+
+
+/** @type {(code: number) => never} */
+const throwCode = (code) => { throw new Error('but-unzip~' + code); };
 
 
 // TODO: this should try utf-8, but if fails, fall back to "dos" encoding
@@ -16,48 +20,40 @@ const decode = (raw) => d.decode(raw);
  * @param {Uint8Array} raw
  */
 const findEndCentralDirectory = (raw) => {
-  let search = raw.length - 20;
+  // TODO: could go forward as we generally don't expect a comment. Might be faster?
 
-  while (search > 2) {
+  let search = raw.length - 20;
+  const bounds = Math.max(search - 65516, 2);  // sub 2**256 - 20 (max comment length)
+
+  // TODO: this could be a single line? esbuild keeps 'break'
+  do {
     search = raw.lastIndexOf(0x50, search - 1);
     if (search === -1) {
       break;
     }
     if (raw[search + 1] === 0x4b && raw[search + 2] === 0x05 && raw[search + 3] === 0x06) {
-      return search;
+      break;
     }
-  }
-  return -1;
+  } while (search > bounds);
+  return search;
 };
 
 
 /**
- * @param {Uint8Array} bytes
- * @param {number} method
- */
-export function decodeCompressedBytes(bytes, method) {
-  if (method === 0) {
-    return bytes;
-  } else if (method !== 8) {
-    throw new Error(`only supports DEFLATE, found: ${method}`);
-  }
-
-  // TODO: if node, use zlib.deflateSync
-
-
-}
-
-
-/**
  * @param {Uint8Array} raw
+ * @param {(raw: Uint8Array) => Uint8Array} inflate
+ * @return {Generator<{ filename: string, comment: string, bytes: Uint8Array }>}
  */
-export function* iter(raw) {
+export function* iter(raw, inflate) {
   let at = findEndCentralDirectory(raw);
   if (at === -1) {
-    throw new Error(`can't find directory`);
+    throwCode(2);  // bad zip format
   }
 
-  const dataView = new DataView(raw.buffer, raw.byteOffset, raw.byteLength);
+  /** @type {(startBy: number, endBy: number) => Uint8Array} */
+  const subarrayMove = (startBy, endBy) => raw.subarray(at += startBy, at += endBy);
+
+  const dataView = new DataView(raw.buffer, raw.byteOffset);   // we don't need byteLength, could be a longer buffer :shrug:
 
   /** @type {(off: number) => number} */
   const u16 = (off) => dataView.getUint16(off + at, true);
@@ -67,46 +63,61 @@ export function* iter(raw) {
 
 
   // read end central directory
-  const fileCount = u16(10);
+  let fileCount = u16(10);
   if (fileCount !== u16(8)) {
-    throw new Error(`no multi-disk support`);
+    throwCode(3);  // no multi-disk support
   }
   const centralDirectoryStart = u32(16);
   at = centralDirectoryStart;
 
   // read central directory
-  for (let i = 0; i < fileCount; ++i) {
+  while (fileCount--) {
     const compressionMethod = u16(10);
     const filenameLength = u16(28);
     const extraFieldsLength = u16(30);
     const commentLength = u16(32);
     const compressedSize = u32(20);
 
-    const localFileHeaderAt = u32(42);
-    const after = at + 46 + filenameLength + extraFieldsLength + commentLength;
+    // find local entry location
+    const localEntryAt = u32(42);
 
-    const filenameBuffer = raw.subarray(at + 46, at + 46 + filenameLength);
-    const filename = decode(filenameBuffer);
+    // read buffers, move at to after entry, and store where we were
+    const filename = decode(subarrayMove(46, filenameLength));
+    // we skip extraFields here
+    const comment = decode(subarrayMove(extraFieldsLength, commentLength));
+    const nextCentralDirectoryEntry = at;
 
-    at = localFileHeaderAt;
+    // declare vars at the same as above, save ~2 bytes
+    /** @type {Uint8Array} */
+    let bytes;
 
-    const localFilenameLength = u16(26);
-    const localExtraFieldsLength = u16(28);
+    // >> start reading entry
+    at = localEntryAt;
 
-    at += (localFilenameLength + localExtraFieldsLength);
-    const bytes = raw.subarray(at, at + compressedSize);
+    // this is the local entry (filename + extra fields) length, which we skip
+    bytes = subarrayMove(30 + u16(26) + u16(28), compressedSize);
+
+    if (compressionMethod === 0) {
+      // do nothing
+    } else if (compressionMethod === 8) {
+      bytes = inflate(bytes);
+    } else {
+      throwCode(1);  // only suppors DEFLATE
+    }
 
     yield {
       filename,
-      raw: bytes,
-      bytes: decodeCompressedBytes(bytes, compressionMethod),
+      comment,
+      bytes,
     };
 
-    at = after;
+    at = nextCentralDirectoryEntry;
+    // << finish reading entry
   }
 }
 
 /**
  * @param {Uint8Array} raw
+ * @param {(raw: Uint8Array) => Uint8Array} inflate
  */
-export const unzip = (raw) => [...iter(raw)];
+export const unzip = (raw, inflate) => [...iter(raw, inflate)];

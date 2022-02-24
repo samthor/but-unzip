@@ -1,13 +1,24 @@
 import test from 'ava';
 import { unzip } from './index.js';
 import * as fs from 'fs';
+import * as zlib from 'zlib';
 
 test('unzip', t => {
 
   const b = fs.readFileSync('testfile2.zip');
-  const out = unzip(b);
+  const out = unzip(b, zlib.inflateRawSync);
 
   t.is(out.length, 2);
   t.is(out[0]?.filename, 'package-lock.json');
   t.is(out[1]?.filename, 'package.json');
+});
+
+test('ignores bad file', t => {
+  const sizes = [0, 2, 100, 256 ** 2, 256 ** 3];
+  for (const size of sizes) {
+    const whatever = new Uint8Array(size);
+    t.throws(() => {
+      unzip(whatever, () => new Uint8Array());
+    }, { message: 'but-unzip~2' });
+  }
 });
