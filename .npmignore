@@ -1,4 +1,7 @@
 with-pako-demo/
 src/
 *.zip
-*.js  # only need mjs
+# we only need mjs
+*.js
+test.*
+tsconfig.json
