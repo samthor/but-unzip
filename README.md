@@ -18,7 +18,7 @@ $ npm install but-unzip
 $ npm install pako
 ```
 
-This library returns zip entries synchronously, but only returns an entry's uncompressed bytes after calling `bytes()`, which'll give `Uint8Array` _or_ `Promise<Uint8Array>`.
+This library returns zip entries synchronously, but only returns an entry's uncompressed bytes after calling `.read()`, which'll give `Uint8Array` _or_ `Promise<Uint8Array>`.
 
 ### Naïve use
 
@@ -64,11 +64,19 @@ const inflateRaw = platformInflateRaw || (await import('pako/lib/inflate.js').in
 const all = unzip(zipBytes, inflateRaw);
 ```
 
+## Limitations
+
+* This library doesn't support ZIP64, but probably should.
+  But your browser (and Node) will probably not be happy to work with 4gb+ files, especially as this is not a streaming library (it just gives everything at once).
+
+* Like literally every zip library that exists, this only supports compression types 0 (store) and 8 (deflate).
+
 ## Notes
 
 * Pako's ESM bundling is a bit broken, so importing 'pako/lib/inflate.js' adds ~20k.
 Importing 'pako' wholesale, even if you only use `inflateRaw`, adds ~45k.
 
-* This library doesn't support ZIP64, but probably should.
-
 * Chrome actually only supports `inflate`, but we abuse that to provide `inflateRaw`.
+
+* The main thread is only good for decompressing small things.
+  If you're handling user data and it could be really big, use a `Worker`.
