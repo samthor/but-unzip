@@ -4,5 +4,34 @@
     "ava": "^4.0.1",
     "esbuild": "^0.14.23"
   },
-  "type": "module"
+  "exports": {
+    ".": {
+      "node": "./index.node.min.mjs",
+      "browser": "./index.browser.min.mjs"
+    }
+  },
+  "imports": {
+    "#default-inflate": {
+      "node": "./src/default-inflate.node.js",
+      "browser": "./src/default-inflate.browser.js"
+    }
+  },
+  "type": "module",
+  "name": "but-unzip",
+  "version": "0.1.0",
+  "description": "tiny unzip for node/browser",
+  "scripts": {
+    "test": "ava",
+    "build": "node build-all.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "unzip"
+  ],
+  "author": "Sam Thorogood <sam.thorogood@gmail.com>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/samthor/but-unzip/issues"
+  },
+  "homepage": "https://github.com/samthor/but-unzip#readme"
 }

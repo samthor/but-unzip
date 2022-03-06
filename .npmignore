@@ -1,0 +1,4 @@
+with-pako-demo/
+src/
+*.zip
+*.js  # only need mjs

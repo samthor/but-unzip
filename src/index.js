@@ -1,4 +1,8 @@
 
+// @ts-ignore Node/esbuild supports #-imports but TS does not
+import { inflateRaw } from '#default-inflate';
+export { inflateRaw };
+
 const LOCAL_FILE_HEADER_TYPE = 0x04034b50;
 const CENTRAL_FILE_HEADER_TYPE = 0x02014b50;
 const END_CENTRAL_TYPE = 0x06054b50;
@@ -13,7 +17,7 @@ const throwCode = (code) => { throw new Error('but-unzip~' + code); };
 
 // TODO: this should try utf-8, but if fails, fall back to "dos" encoding
 /** @type {(raw: Uint8Array) => string} */
-const decode = (raw) => d.decode(raw);
+const decodeString = (raw) => d.decode(raw);
 
 
 /**
@@ -41,10 +45,10 @@ const findEndCentralDirectory = (raw) => {
 
 /**
  * @param {Uint8Array} raw
- * @param {(raw: Uint8Array) => Uint8Array} inflate
- * @return {Generator<{ filename: string, comment: string, bytes: Uint8Array }>}
+ * @param {(raw: Uint8Array) => Promise<Uint8Array>|Uint8Array} inf
+ * @return {Generator<{ filename: string, comment: string, read: () => Promise<Uint8Array>|Uint8Array }>}
  */
-export function* iter(raw, inflate) {
+export function* iter(raw, inf = inflateRaw) {
   let at = findEndCentralDirectory(raw);
   if (at === -1) {
     throwCode(2);  // bad zip format
@@ -82,12 +86,11 @@ export function* iter(raw, inflate) {
     const localEntryAt = u32(42);
 
     // read buffers, move at to after entry, and store where we were
-    const filename = decode(subarrayMove(46, filenameLength));
+    const filename = decodeString(subarrayMove(46, filenameLength));
     // we skip extraFields here
-    const comment = decode(subarrayMove(extraFieldsLength, commentLength));
+    const comment = decodeString(subarrayMove(extraFieldsLength, commentLength));
     const nextCentralDirectoryEntry = at;
 
-    // declare vars at the same as above, save ~2 bytes
     /** @type {Uint8Array} */
     let bytes;
 
@@ -97,18 +100,18 @@ export function* iter(raw, inflate) {
     // this is the local entry (filename + extra fields) length, which we skip
     bytes = subarrayMove(30 + u16(26) + u16(28), compressedSize);
 
-    if (compressionMethod === 0) {
-      // do nothing
-    } else if (compressionMethod === 8) {
-      bytes = inflate(bytes);
-    } else {
-      throwCode(1);  // only suppors DEFLATE
-    }
-
     yield {
       filename,
       comment,
-      bytes,
+      read: () => {
+        if (compressionMethod === 0) {
+          return bytes;
+          // do nothing
+        } else if (compressionMethod === 8) {
+          return inf(bytes);
+        }
+        throwCode(1);  // only suppors DEFLATE
+      },
     };
 
     at = nextCentralDirectoryEntry;
@@ -117,7 +120,6 @@ export function* iter(raw, inflate) {
 }
 
 /**
- * @param {Uint8Array} raw
- * @param {(raw: Uint8Array) => Uint8Array} inflate
+ * @type {(...args: Parameters<iter>) => { filename: string, comment: string, read: () => Promise<Uint8Array>|Uint8Array }[]}
  */
-export const unzip = (raw, inflate) => [...iter(raw, inflate)];
+export const unzip = (...args) => [...iter(...args)];
