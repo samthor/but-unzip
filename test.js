@@ -30,3 +30,17 @@ test('ignores bad file', t => {
     }, { message: 'but-unzip~2' });
   }
 });
+
+test('opens xlsx file', async t => {
+  const b = fs.readFileSync('testfile.xlsx');
+  const out = unzip(b);
+
+  t.is(out.length, 11);
+
+  const sheet2 = out.find((x) => x.filename === 'xl/worksheets/sheet2.xml');
+  t.truthy(sheet2);
+
+  const bytes = await sheet2?.read();
+  const s = new TextDecoder().decode(bytes);
+  t.true(s.startsWith('<?xml version'));
+});
