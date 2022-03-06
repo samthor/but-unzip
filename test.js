@@ -21,6 +21,16 @@ test('unzip bytes', async t => {
   t.is(new TextDecoder().decode(file), 'Hello!\n');
 });
 
+test('unzip zip64', async t => {
+  const b = fs.readFileSync('testfile64.zip');
+  const out = unzip(b);
+
+  t.is(out.length, 1);
+
+  const file = await out[0]?.read();
+  t.is(new TextDecoder().decode(file), 'This is a long string\n');
+});
+
 test('ignores bad file', t => {
   const sizes = [0, 2, 100, 256 ** 2, 256 ** 3];
   for (const size of sizes) {
