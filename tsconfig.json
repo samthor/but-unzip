@@ -7,7 +7,7 @@
     // both to e.g., "es2017"
     "module": "esnext",
     "target": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "NodeNext",
 
     // configure as you like: these are my preferred defaults!
     "strict": true,

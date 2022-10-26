@@ -1,5 +1,4 @@
 
-// @ts-ignore Node/esbuild supports #-imports but TS does not
 import { inflateRaw } from '#default-inflate';
 export { inflateRaw };
 
