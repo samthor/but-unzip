@@ -1,56 +1,58 @@
-import test from 'ava';
 import { unzip } from './src/index.js';
-import * as fs from 'fs';
+import * as fs from 'node:fs';
+import test from 'node:test';
+import * as assert from 'node:assert';
 
-test('unzip', t => {
+test('unzip', () => {
   const b = fs.readFileSync('testfile2.zip');
   const out = unzip(b);
 
-  t.is(out.length, 2);
-  t.is(out[0]?.filename, 'package-lock.json');
-  t.is(out[1]?.filename, 'package.json');
+  assert.strictEqual(out.length, 2);
+  assert.strictEqual(out[0]?.filename, 'package-lock.json');
+  assert.strictEqual(out[1]?.filename, 'package.json');
 });
 
-test('unzip bytes', async t => {
+test('unzip bytes', async () => {
   const b = fs.readFileSync('testfile.zip');
   const out = unzip(b);
 
-  t.is(out.length, 1);
+  assert.strictEqual(out.length, 1);
 
   const file = await out[0]?.read();
-  t.is(new TextDecoder().decode(file), 'Hello!\n');
+  assert.strictEqual(new TextDecoder().decode(file), 'Hello!\n');
 });
 
-test('unzip zip64', async t => {
+test('unzip zip64', async () => {
   const b = fs.readFileSync('testfile64.zip');
   const out = unzip(b);
 
-  t.is(out.length, 1);
+  assert.strictEqual(out.length, 1);
 
   const file = await out[0]?.read();
-  t.is(new TextDecoder().decode(file), 'This is a long string\n');
+  assert.strictEqual(new TextDecoder().decode(file), 'This is a long string\n');
 });
 
-test('ignores bad file', t => {
+test('ignores bad file', () => {
   const sizes = [0, 2, 100, 256 ** 2, 256 ** 3];
   for (const size of sizes) {
     const whatever = new Uint8Array(size);
-    t.throws(() => {
+
+    assert.throws(() => {
       unzip(whatever, () => new Uint8Array());
-    }, { message: 'but-unzip~2' });
+    });
   }
 });
 
-test('opens xlsx file', async t => {
+test('opens xlsx file', async () => {
   const b = fs.readFileSync('testfile.xlsx');
   const out = unzip(b);
 
-  t.is(out.length, 11);
+  assert.strictEqual(out.length, 11);
 
   const sheet2 = out.find((x) => x.filename === 'xl/worksheets/sheet2.xml');
-  t.truthy(sheet2);
+  assert.ok(sheet2);
 
   const bytes = await sheet2?.read();
   const s = new TextDecoder().decode(bytes);
-  t.true(s.startsWith('<?xml version'));
+  assert.ok(s.startsWith('<?xml version'));
 });

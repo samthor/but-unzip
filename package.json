@@ -1,7 +1,6 @@
 {
   "devDependencies": {
-    "@types/node": "^17.0.18",
-    "ava": "^4.0.1",
+    "@types/node": "^18.15.12",
     "esbuild": "^0.14.23"
   },
   "exports": {
@@ -21,7 +20,7 @@
   "version": "0.1.0",
   "description": "tiny unzip for node/browser",
   "scripts": {
-    "test": "ava",
+    "test": "node --test",
     "build": "node build-all.js",
     "prepublishOnly": "npm run build"
   },
