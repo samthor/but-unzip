@@ -4,7 +4,7 @@ small unzip library.
 ~777 bytes for Node,
 and ~1.1k^ bytes for browsers.
 
-^only Chrome and friends have built-in `inflateRaw` support for the compression in zip, so you'll need to include [e.g., pako](https://www.npmjs.com/package/pako), which adds ~20k.
+^only Chrome 80 and Safari 16.4+ have built-in deflate support for the compression in zip (see [`DecompressionStream`]()), so you'll need to include [e.g., pako](https://www.npmjs.com/package/pako), which adds ~20k.
 
 ## Usage
 
@@ -73,7 +73,7 @@ const all = unzip(zipBytes, inflateRaw);
 
 ## Notes
 
-* Pako's ESM bundling is a bit broken, so importing 'pako/lib/inflate.js' adds ~20k.
+* Pako's ESM bundling can be a bit broken, so importing 'pako/lib/inflate.js' adds ~20k.
 Importing 'pako' wholesale, even if you only use `inflateRaw`, adds ~45k.
 
 * Chrome actually only supports `inflate`, but we abuse that to provide `inflateRaw`.
