@@ -5,8 +5,11 @@
   },
   "exports": {
     ".": {
-      "node": "./index.node.min.mjs",
-      "browser": "./index.browser.min.mjs"
+      "import": {
+        "types": "./index.d.ts",
+        "node": "./index.node.min.mjs",
+        "browser": "./index.browser.min.mjs"
+      }
     }
   },
   "imports": {
@@ -17,7 +20,7 @@
   },
   "type": "module",
   "name": "but-unzip",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "tiny unzip for node/browser",
   "scripts": {
     "test": "node --test",
