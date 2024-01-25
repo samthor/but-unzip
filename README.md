@@ -1,10 +1,11 @@
 # but-unzip
 
 small unzip library.
-~777 bytes for Node,
+~743 bytes for Node,
 and ~1.1k^ bytes for browsers.
 
-^only Chrome 80 and Safari 16.4+ have built-in deflate support for the compression in zip (see [`DecompressionStream`]()), so you'll need to include [e.g., pako](https://www.npmjs.com/package/pako), which adds ~20k.
+^90%+ of browsers support [the decompression API](https://caniuse.com/mdn-api_decompressionstream).
+For the last 10%, you can dynamically import `pako`, adding ~20k.
 
 ## Usage
 
@@ -14,7 +15,7 @@ Has zero dependencies.
 ```bash
 $ npm install but-unzip
 
-# for browsers you will likely need
+# for old browsers you need
 $ npm install pako
 ```
 
@@ -22,7 +23,7 @@ This library returns zip entries synchronously, but only returns an entry's unco
 
 ### Naïve use
 
-If there's a built-in function to inflate compressed files (like in Node), you can use the code like:
+If there's a built-in function to inflate compressed files (like in Node or 90%+ of browsers), you can use the code like:
 
 ```js
 import { iter } from 'but-unzip';
@@ -39,7 +40,7 @@ for (const entry of iter(bytes)) {
 
 ### Provide inflate function (non-Chrome)
 
-In practice, in the browser, you're going to want to include `pako`, because only Chrome has built-in support:
+If you're worried about maximum compatibility:
 
 ```js
 import { unzip, inflateRaw as platformInflateRaw } from 'but-unzip';
@@ -53,7 +54,7 @@ async function decompressUint8Array(zipBytes) {
 
 ### Dynamically import inflate
 
-You might want to be tricky and only fetch `pako` if you need to:
+You should only fetch `pako` if you need to, because again, 90% of people don't need it:
 
 ```js
 import { unzip, inflateRaw as platformInflateRaw } from 'but-unzip';

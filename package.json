@@ -1,7 +1,7 @@
 {
   "devDependencies": {
     "@types/node": "^18.15.12",
-    "esbuild": "^0.14.23"
+    "esbuild": "^0.14.54"
   },
   "exports": {
     ".": {

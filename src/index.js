@@ -25,20 +25,31 @@ const decodeString = (raw) => d.decode(raw);
 const findEndCentralDirectory = (raw) => {
   // TODO: could go forward as we generally don't expect a comment. Might be faster?
 
+  const mod = -1;
+
   let search = raw.length - 20;
   const bounds = Math.max(search - 65516, 2);  // sub 2**256 - 20 (max comment length)
 
-  // TODO: this could be a single line? esbuild keeps 'break'
-  do {
-    search = raw.lastIndexOf(0x50, search - 1);
-    if (search === -1) {
-      break;
-    }
-    if (raw[search + 1] === 0x4b && raw[search + 2] === 0x05 && raw[search + 3] === 0x06) {
-      break;
-    }
-  } while (search > bounds);
+  while (
+    ((search = raw.lastIndexOf(0x50, search - 1)) !== -1) &&
+    !(raw[search + 1] === 0x4b && raw[search + 2] === 0x05 && raw[search + 3] === 0x06) &&
+    search > bounds
+  ) { }
+
   return search;
+
+  // // TODO: this could be a single line? esbuild keeps 'break'
+  // do {
+  //   search = raw.lastIndexOf(0x50, search - 1);
+  //   if (search === -1) {
+  //     break;
+  //   }
+  //   if (raw[search + 1] === 0x4b && raw[search + 2] === 0x05 && raw[search + 3] === 0x06) {
+  //     break;
+  //   }
+  // } while (search > bounds);
+  // return search;
+
 };
 
 
@@ -103,13 +114,15 @@ export function* iter(raw, inf = inflateRaw) {
       filename,
       comment,
       read: () => {
-        if (compressionMethod === 0) {
-          return bytes;
-          // do nothing
-        } else if (compressionMethod === 8) {
-          return inf(bytes);
-        }
-        throwCode(1);  // only suppors DEFLATE
+        return (compressionMethod & 8) ? inf(bytes) :
+          (compressionMethod ? throwCode(1) : bytes);
+        // if (!compressionMethod) {
+        //   return bytes;
+        //   // do nothing
+        // } else if (compressionMethod&8) {
+        //   return inf(bytes);
+        // }
+        // return throwCode(1);  // only suppors DEFLATE
       },
     };
 
