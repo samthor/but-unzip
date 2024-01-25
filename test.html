@@ -16,4 +16,19 @@ for (const i of iter(uint8)) {
   console.info('s', s);
 }
 
+// TODO: construct valid but with bad DEFLATE
+const bad = new Uint8Array([1,2,3]);
+let fail = false;
+try {
+  for (const i of iter(bad)) {
+
+  }
+  fail = true;
+} catch (e) {
+  console.debug('OK! got failure', e);
+}
+if (fail) {
+  throw new Error(`expected failure`);
+}
+
 </script>

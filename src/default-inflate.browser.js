@@ -21,14 +21,14 @@ if (ctor) {
     const w = stream.writable.getWriter();
     const r = stream.readable.getReader();
 
-    w.write(buildBuffer([0x78, 0x9c]));
-    w.write(bytes);
-
     const data = (async () => {
+      /** @type {Uint8Array} */
+      let out;
 
       /** @type {Uint8Array[]} */
       const agg = [];
       let size = 0;
+      let i = 0;
 
       for (; ;) {
         try {
@@ -47,24 +47,25 @@ if (ctor) {
           }
 
           // have to merge chunks
-          const out = buildBuffer(size);
-          let i = 0;
-          for (const a of agg) {
+          out = buildBuffer(size);
+          agg.map((a) => {
             out.set(a, i);
             i += a.length;
-          }
+          });
           return out;
         }
       }
 
     })();
 
-    await Promise.resolve();
+    w.write(buildBuffer([0x78, 0x9c]));
+    await w.write(bytes); // force microtask
+
     afterDataWriteFrame = true;
 
     // This will cause an error because the checksum is bad and it should feel bad.
     // Swallow it whole.
-    w.write(buildBuffer(4)).catch((e) => {});
+    w.write(buildBuffer(4)).catch((e) => 0);
 
     return data;
   };

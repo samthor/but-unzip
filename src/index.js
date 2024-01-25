@@ -25,8 +25,6 @@ const decodeString = (raw) => d.decode(raw);
 const findEndCentralDirectory = (raw) => {
   // TODO: could go forward as we generally don't expect a comment. Might be faster?
 
-  const mod = -1;
-
   let search = raw.length - 20;
   const bounds = Math.max(search - 65516, 2);  // sub 2**256 - 20 (max comment length)
 

@@ -20,7 +20,7 @@
   },
   "type": "module",
   "name": "but-unzip",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "tiny unzip for node/browser",
   "scripts": {
     "test": "node --test",
