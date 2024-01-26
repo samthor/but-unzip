@@ -1,10 +1,10 @@
-import { unzip } from './src/index.js';
+import { unzip } from '../src/index.js';
 import * as fs from 'node:fs';
 import test from 'node:test';
 import * as assert from 'node:assert';
 
 test('unzip', () => {
-  const b = fs.readFileSync('testfile2.zip');
+  const b = fs.readFileSync('./test/testfile2.zip');
   const out = unzip(b);
 
   assert.strictEqual(out.length, 2);
@@ -13,7 +13,7 @@ test('unzip', () => {
 });
 
 test('unzip bytes', async () => {
-  const b = fs.readFileSync('testfile.zip');
+  const b = fs.readFileSync('./test/testfile.zip');
   const out = unzip(b);
 
   assert.strictEqual(out.length, 1);
@@ -23,7 +23,7 @@ test('unzip bytes', async () => {
 });
 
 test('unzip zip64', async () => {
-  const b = fs.readFileSync('testfile64.zip');
+  const b = fs.readFileSync('./test/testfile64.zip');
   const out = unzip(b);
 
   assert.strictEqual(out.length, 1);
@@ -44,7 +44,7 @@ test('ignores bad file', () => {
 });
 
 test('opens xlsx file', async () => {
-  const b = fs.readFileSync('testfile.xlsx');
+  const b = fs.readFileSync('./test/testfile.xlsx');
   const out = unzip(b);
 
   assert.strictEqual(out.length, 11);
