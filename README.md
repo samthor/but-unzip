@@ -2,7 +2,7 @@
 
 small unzip library.
 ~743 bytes for Node,
-and ~1093^ bytes for browsers.
+and ~999^ bytes for browsers.
 
 ^90%+ of browsers support [the decompression API](https://caniuse.com/mdn-api_decompressionstream).
 For the last 10%, you can dynamically import `pako`, adding ~20k.
@@ -38,7 +38,7 @@ for (const entry of iter(bytes)) {
 }
 ```
 
-### Provide inflate function (non-Chrome)
+### Provide inflate function
 
 If you're worried about maximum compatibility:
 
@@ -77,7 +77,8 @@ const all = unzip(zipBytes, inflateRaw);
 * Pako's ESM bundling can be a bit broken, so importing 'pako/lib/inflate.js' adds ~20k.
 Importing 'pako' wholesale, even if you only use `inflateRaw`, adds ~45k.
 
-* Chrome actually only supports `inflate`, but we abuse that to provide `inflateRaw`.
+* Chrome has marginally more support for `inflate` in `DecompressionStream`, so we abuse that to provide `inflateRaw`.
+This could probably be fixed.
 
 * The main thread is only good for decompressing small things.
   If you're handling user data and it could be really big, use a `Worker`.

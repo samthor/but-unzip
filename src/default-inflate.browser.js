@@ -1,10 +1,11 @@
 let inflateRaw = undefined;
 
-/** @type {(x: any) => Uint8Array} */
-const buildBuffer = (x) => new Uint8Array(x);
+const method = 'deflate-raw';
 
 const ctor = self['DecompressionStream'];
-if (ctor) {
+try {
+  new ctor(method);
+
   // https://zlib.net/manual.html:
   //   A raw deflate stream is one with no zlib or gzip header or trailer. This routine would
   //   normally be used in a utility that reads zip or gzip files and writes out uncompressed files.
@@ -13,62 +14,46 @@ if (ctor) {
   //   behavior of inflate(), which expects a zlib header and trailer around the deflate stream.
 
   inflateRaw = async (bytes) => {
-    let afterDataWriteFrame = false;
-
     /** @type {{ readable: ReadableStream, writable: WritableStream }} */
-    const stream = new ctor('deflate');
+    const stream = new ctor(method);
 
     const w = stream.writable.getWriter();
     const r = stream.readable.getReader();
 
-    const data = (async () => {
-      /** @type {Uint8Array} */
-      let out;
+    w.write(bytes);
+    w.close();
 
-      /** @type {Uint8Array[]} */
-      const agg = [];
-      let size = 0;
-      let i = 0;
+    /** @type {Uint8Array} */
+    let out;
 
-      for (; ;) {
-        try {
-          const s = await r.read();
-          agg.push(s.value);
-          size += s.value.length;
-        } catch (e) {
-          if (!afterDataWriteFrame) {
-            // crash in compressed bytes
-            throw e;
-          }
+    /** @type {Uint8Array[]} */
+    const agg = [];
+    let size = 0;
+    let i = 0;
 
-          // we only got one chunk, return it
-          if (agg.length === 1) {
-            return agg[0];
-          }
+    /** @type {ReadableStreamReadResult<any>} */
+    let s;
 
-          // have to merge chunks
-          out = buildBuffer(size);
-          agg.map((a) => {
-            out.set(a, i);
-            i += a.length;
-          });
-          return out;
-        }
-      }
+    while (!(s = await r.read()).done) {
+      // use out as tmp var
+      out = s.value;
+      agg.push(out);
+      size += out.length;
+    }
 
-    })();
+    // we only got one chunk, return it
+    if (!(agg.length - 1)) {
+      return agg[0];
+    }
 
-    w.write(buildBuffer([0x78, 0x9c]));
-    await w.write(bytes); // force microtask
-
-    afterDataWriteFrame = true;
-
-    // This will cause an error because the checksum is bad and it should feel bad.
-    // Swallow it whole.
-    w.write(buildBuffer(4)).catch((e) => 0);
-
-    return data;
+    // have to merge chunks
+    out = new Uint8Array(size);
+    agg.map((a) => {
+      out.set(a, i);
+      i += a.length;
+    });
+    return out;
   };
-}
+} catch {}
 
 export { inflateRaw };
