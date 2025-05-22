@@ -2,11 +2,10 @@ export { inflateRaw };
 
 let inflateRaw = undefined;
 
-const method = 'deflate-raw';
+const build = () => new DecompressionStream('deflate-raw');
 
-const ctor = self['DecompressionStream'];
 try {
-  new ctor(method);
+  build();
 
   // https://zlib.net/manual.html:
   //   A raw deflate stream is one with no zlib or gzip header or trailer. This routine would
@@ -17,7 +16,7 @@ try {
 
   inflateRaw = async (bytes) => {
     /** @type {{ readable: ReadableStream, writable: WritableStream }} */
-    const stream = new ctor(method);
+    const stream = build();
 
     const w = stream.writable.getWriter();
     const r = stream.readable.getReader();

@@ -18,38 +18,10 @@ const throwCode = (code) => { throw new Error('but-unzip~' + code); };
 /** @type {(raw: Uint8Array) => string} */
 const decodeString = (raw) => d.decode(raw);
 
-
 /**
- * @param {Uint8Array} raw
+ * @type {(...args: Parameters<iter>) => { filename: string, comment: string, read: () => Promise<Uint8Array>|Uint8Array }[]}
  */
-const findEndCentralDirectory = (raw) => {
-  // TODO: could go forward as we generally don't expect a comment. Might be faster?
-
-  let search = raw.length - 20;
-  const bounds = Math.max(search - 65516, 2);  // sub 2**256 - 20 (max comment length)
-
-  while (
-    ((search = raw.lastIndexOf(0x50, search - 1)) !== -1) &&
-    !(raw[search + 1] === 0x4b && raw[search + 2] === 0x05 && raw[search + 3] === 0x06) &&
-    search > bounds
-  ) { }
-
-  return search;
-
-  // // TODO: this could be a single line? esbuild keeps 'break'
-  // do {
-  //   search = raw.lastIndexOf(0x50, search - 1);
-  //   if (search === -1) {
-  //     break;
-  //   }
-  //   if (raw[search + 1] === 0x4b && raw[search + 2] === 0x05 && raw[search + 3] === 0x06) {
-  //     break;
-  //   }
-  // } while (search > bounds);
-  // return search;
-
-};
-
+export const unzip = (...args) => [...iter(...args)];
 
 /**
  * @param {Uint8Array} raw
@@ -57,7 +29,16 @@ const findEndCentralDirectory = (raw) => {
  * @return {Generator<{ filename: string, comment: string, read: () => Promise<Uint8Array>|Uint8Array }>}
  */
 export function* iter(raw, inf = inflateRaw) {
-  let at = findEndCentralDirectory(raw);
+  // TODO: could go forward as we generally don't expect a comment. Might be faster?
+  let at = raw.length - 20;
+  const bounds = Math.max(at - 65516, 2);  // sub 2**256 - 20 (max comment length)
+
+  while (
+    ((at = raw.lastIndexOf(0x50, at - 1)) !== -1) &&
+    !(raw[at + 1] === 0x4b && raw[at + 2] === 0x05 && raw[at + 3] === 0x06) &&
+    at > bounds
+  ) { }
+
   if (at === -1) {
     throwCode(2);  // bad zip format
   }
@@ -85,7 +66,7 @@ export function* iter(raw, inf = inflateRaw) {
   // read central directory
   while (fileCount--) {
     const compressionMethod = u16(10);
-    const filenameLength = u16(28);
+//    const filenameLength = u16(28);
     const extraFieldsLength = u16(30);
     const commentLength = u16(32);
     const compressedSize = u32(20);
@@ -94,7 +75,7 @@ export function* iter(raw, inf = inflateRaw) {
     const localEntryAt = u32(42);
 
     // read buffers, move at to after entry, and store where we were
-    const filename = decodeString(subarrayMove(46, filenameLength));
+    const filename = decodeString(subarrayMove(46, u16(28)));
     // we skip extraFields here
     const comment = decodeString(subarrayMove(extraFieldsLength, commentLength));
     const nextCentralDirectoryEntry = at;
@@ -129,7 +110,3 @@ export function* iter(raw, inf = inflateRaw) {
   }
 }
 
-/**
- * @type {(...args: Parameters<iter>) => { filename: string, comment: string, read: () => Promise<Uint8Array>|Uint8Array }[]}
- */
-export const unzip = (...args) => [...iter(...args)];

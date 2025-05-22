@@ -1,8 +1,8 @@
 # but-unzip
 
 small unzip library.
-~739 bytes for Node,
-and ~994^ bytes for browsers, _before_ gzip.
+~704 bytes for Node,
+and ~951^ bytes for browsers, _before_ gzip.
 
 ^92.5%+ of browsers support [the decompression API](https://caniuse.com/mdn-api_decompressionstream), which in 2025, is probably all your users.
 If you _really_ care about the last 7.5%, you can dynamically import `pako`, adding ~20k: see below.
