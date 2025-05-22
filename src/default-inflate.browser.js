@@ -1,3 +1,5 @@
+export { inflateRaw };
+
 let inflateRaw = undefined;
 
 const method = 'deflate-raw';
@@ -20,9 +22,6 @@ try {
     const w = stream.writable.getWriter();
     const r = stream.readable.getReader();
 
-    w.write(bytes);
-    w.close();
-
     /** @type {Uint8Array} */
     let out;
 
@@ -33,6 +32,9 @@ try {
 
     /** @type {ReadableStreamReadResult<any>} */
     let s;
+
+    w.write(bytes);
+    w.close();
 
     while (!(s = await r.read()).done) {
       // use out as tmp var
@@ -48,12 +50,11 @@ try {
 
     // have to merge chunks
     out = new Uint8Array(size);
-    agg.map((a) => {
-      out.set(a, i);
-      i += a.length;
-    });
+    agg.map((a) => (
+      out.set(a, i),
+      i += a.length
+    ));
     return out;
   };
 } catch {}
 
-export { inflateRaw };

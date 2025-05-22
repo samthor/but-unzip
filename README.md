@@ -1,11 +1,11 @@
 # but-unzip
 
 small unzip library.
-~743 bytes for Node,
-and ~999^ bytes for browsers.
+~739 bytes for Node,
+and ~994^ bytes for browsers, _before_ gzip.
 
-^90%+ of browsers support [the decompression API](https://caniuse.com/mdn-api_decompressionstream).
-For the last 10%, dynamically import `pako`, adding ~20k.
+^92.5%+ of browsers support [the decompression API](https://caniuse.com/mdn-api_decompressionstream), which in 2025, is probably all your users.
+If you _really_ care about the last 7.5%, you can dynamically import `pako`, adding ~20k: see below.
 
 ## Usage
 
@@ -23,7 +23,7 @@ This library returns zip entries synchronously, but only returns an entry's unco
 
 ### Naïve use
 
-If there's a built-in function to inflate compressed files (like in Node or 90%+ of browsers), you can use the code like:
+If there's a built-in function to inflate compressed files (like in Node or most browsers), you can use the code like:
 
 ```js
 import { iter } from 'but-unzip';
@@ -54,15 +54,16 @@ async function decompressUint8Array(zipBytes) {
 
 ### Dynamically import inflate
 
-You should only fetch `pako` if you need to, because again, 90% of people don't need it:
+You _could_ use dynamic `import()` instead to include `pako`, but the intersection of users who:
+
+- don't have the compression API
+- don't support ESM imports
+
+&hellip;are extremely high (e.g., IE11 and weird old browsers).
 
 ```js
-import { unzip, inflateRaw as platformInflateRaw } from 'but-unzip';
-
+import { inflateRaw as platformInflateRaw } from 'but-unzip';
 const inflateRaw = platformInflateRaw || (await import('pako/lib/inflate.js').inflateRaw);
-
-// later
-const all = unzip(zipBytes, inflateRaw);
 ```
 
 ## Limitations
@@ -74,8 +75,9 @@ const all = unzip(zipBytes, inflateRaw);
 
 ## Notes
 
-* Pako's ESM bundling can be a bit broken, so importing 'pako/lib/inflate.js' adds ~20k.
-  Importing 'pako' wholesale, even if you only use `inflateRaw`, adds ~45k.
+* In my testing with `esbuild`, Pako's ESM bundling can be a bit broken, so importing "pako/lib/inflate.js" adds ~20k.
+  Importing `pako` wholesale, even if you only use `inflateRaw`, adds ~45k.
 
-* The main thread is only good for decompressing small things.
-  If you're handling user data and it could be really big, use a `Worker`.
+* If you're handling user data and it could be really big, use a `Worker`.
+  But also, the compression API is `async` and doesn't block your main thread.
+  YMMV!
