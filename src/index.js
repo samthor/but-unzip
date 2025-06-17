@@ -54,7 +54,6 @@ export function* iter(raw, inf = inflateRaw) {
   /** @type {(off: number) => number} */
   const u32 = (off) => dataView.getUint32(off + at, true);
 
-
   // read end central directory
   let fileCount = u16(10);
   if (fileCount !== u16(8)) {

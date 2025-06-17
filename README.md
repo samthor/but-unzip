@@ -2,7 +2,7 @@
 
 small unzip library.
 ~704 bytes for Node,
-and ~951^ bytes for browsers, _before_ gzip.
+and ~944^ bytes for browsers, _before_ gzip.
 
 ^92.5%+ of browsers support [the decompression API](https://caniuse.com/mdn-api_decompressionstream), which in 2025, is probably all your users.
 If you _really_ care about the last 7.5%, you can dynamically import `pako`, adding ~20k: see below.
@@ -54,12 +54,9 @@ async function decompressUint8Array(zipBytes) {
 
 ### Dynamically import inflate
 
-You _could_ use dynamic `import()` instead to include `pako`, but the intersection of users who:
+You _could_ use dynamic `import()` instead to include `pako`, but nearly all users who are missing the compression library probably also don't support ESM imports (e.g., IE11 and old browsers).
 
-- don't have the compression API
-- don't support ESM imports
-
-&hellip;are extremely high (e.g., IE11 and weird old browsers).
+So this is how you'd do it but I'd probably not recommend it:
 
 ```js
 import { inflateRaw as platformInflateRaw } from 'but-unzip';

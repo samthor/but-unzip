@@ -21,7 +21,7 @@ try {
     const w = stream.writable.getWriter();
     const r = stream.readable.getReader();
 
-    /** @type {Uint8Array} */
+    /** @type {Uint8Array|undefined} */
     let out;
 
     /** @type {Uint8Array[]} */
@@ -29,7 +29,7 @@ try {
     let size = 0;
     let i = 0;
 
-    /** @type {ReadableStreamReadResult<any>} */
+    /** @type {ReadableStreamReadResult<Uint8Array>} */
     let s;
 
     w.write(bytes);
@@ -43,11 +43,11 @@ try {
     }
 
     // we only got one chunk, return it
-    if (!(agg.length - 1)) {
-      return agg[0];
+    if (!agg[1] && out) {
+      return out;
     }
 
-    // have to merge chunks
+    // have to merge chunks (or no chunks => still need to create)
     out = new Uint8Array(size);
     agg.map((a) => (
       out.set(a, i),
