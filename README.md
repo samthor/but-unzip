@@ -2,7 +2,7 @@
 
 small unzip library.
 ~666 bytes for Node 😈,
-and ~759^ bytes for browsers, _before_ gzip.
+and ~755^ bytes for browsers, _before_ gzip.
 
 ^95%+ of browsers support [the decompression API](https://caniuse.com/mdn-api_decompressionstream), which in 2026, is probably all your users.
 If you _really_ care about the last 5%, you can dynamically import `pako`, adding ~20k: see below.
@@ -39,7 +39,7 @@ for (const entry of iter(bytes)) {
 
 ### Provide inflate function
 
-If you're worried about maximum compatibility, add `pako` as a dependency and:
+If you're worried about maximum compatibility, add `pako` as a dependency and include its `inflateRaw` method:
 
 ```js
 import { unzip, inflateRaw as platformInflateRaw } from 'but-unzip';
@@ -55,8 +55,8 @@ But again, this is for 5% of users in browsers: ancient Safari, IE11 and so on.
 
 ## Limitations
 
-* This library doesn't support ZIP64, but probably should.
-  But your browser (and Node) will likely not be happy to work with 4gb+ files, especially as this is not a streaming library (it just gives everything at once).
+* This library doesn't support ZIP64.
+  However, your browser (and Node) will likely not be happy to work with 4gb+ files, especially as this is not a streaming library (it just gives everything at once).
 
 * Like literally every zip library that exists, this only supports compression types 0 (store) and 8 (deflate).
 
