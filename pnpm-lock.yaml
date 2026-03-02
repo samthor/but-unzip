@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      dhost:
+        specifier: ^0.3.5
+        version: 0.3.5
     devDependencies:
       '@types/node':
         specifier: ^25.3.3
@@ -176,10 +180,43 @@ packages:
   '@types/node@25.3.3':
     resolution: {integrity: sha512-DpzbrH7wIcBaJibpKo9nnSQL0MTRdnWttGyE5haGwK86xgMOkFLp7vEyfQPGLOJh5wNYiJ3V9PmUMDhV9u8kkQ==}
 
+  async-transforms@1.0.9:
+    resolution: {integrity: sha512-PCZEV8XLKoJTYovmfbXN5bZU2b8jf2d22hM7gl3xYmNRsVBt0khvHsgOdbd8UZj0xM9Tv1eWt5qrzeThgR2Alw==}
+
+  bytes@3.1.2:
+    resolution: {integrity: sha512-/Nf7TyzTx6S3yRJObOAV7956r8cr2+Oj8AC5dt8wSP3BQAoeX58NoHyCU8P8zGkNXStjTSi6fzO6F0pBdcYbEg==}
+    engines: {node: '>= 0.8'}
+
+  colorette@1.4.0:
+    resolution: {integrity: sha512-Y2oEozpomLn7Q3HFP7dpww7AtMJplbM9lGZP6RDfHqmbeRjiwRg4n6VM6j4KLmRke85uWEI7JqF17f3pqdRA0g==}
+
+  dhost@0.3.5:
+    resolution: {integrity: sha512-kH64WQdIkMuP8AWigUxvbNjozaOYMfuYHYLhoYPkF6m3Dmpy9sdKeUBmus9Fx9lOf0T1pSrtsFx8LCueu0x/nw==}
+    hasBin: true
+
   esbuild@0.27.3:
     resolution: {integrity: sha512-8VwMnyGCONIs6cWue2IdpHxHnAjzxnw2Zr7MkVxB2vjmQ2ivqGFb4LEG3SMnv0Gb2F/G/2yA8zUaiL1gywDCCg==}
     engines: {node: '>=18'}
     hasBin: true
+
+  esm-resolve@1.0.11:
+    resolution: {integrity: sha512-LxF0wfUQm3ldUDHkkV2MIbvvY0TgzIpJ420jHSV1Dm+IlplBEWiJTKWM61GtxUfvjV6iD4OtTYFGAGM2uuIUWg==}
+
+  gumnut@0.3.9:
+    resolution: {integrity: sha512-kPKUyYdOMZOogOdqCc0nt9ECFDJD7s4s2hGpPDPy/OCqSdhIH13VWdeZAIB0f4W3JXHd+1l7rauw5yHXBO6n1A==}
+
+  he@1.2.0:
+    resolution: {integrity: sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==}
+    hasBin: true
+
+  mime@2.6.0:
+    resolution: {integrity: sha512-USPkMeET31rOMiarsBNIHZKLGgvKc/LrjofAnBlOttf5ajRvqiRA8QsenbcooctK6d6Ts6aqZXBA+XbkKthiQg==}
+    engines: {node: '>=4.0.0'}
+    hasBin: true
+
+  mri@1.2.0:
+    resolution: {integrity: sha512-tzzskb3bG8LvYGFF/mDTpq3jpI6Q9wc3LEmBaghu+DdCssd1FakN7Bc0hVNmEyGq1bq3RgfkCb3cmQLpNPOroA==}
+    engines: {node: '>=4'}
 
   undici-types@7.18.2:
     resolution: {integrity: sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w==}
@@ -268,6 +305,23 @@ snapshots:
     dependencies:
       undici-types: 7.18.2
 
+  async-transforms@1.0.9: {}
+
+  bytes@3.1.2: {}
+
+  colorette@1.4.0: {}
+
+  dhost@0.3.5:
+    dependencies:
+      async-transforms: 1.0.9
+      bytes: 3.1.2
+      colorette: 1.4.0
+      esm-resolve: 1.0.11
+      gumnut: 0.3.9
+      he: 1.2.0
+      mime: 2.6.0
+      mri: 1.2.0
+
   esbuild@0.27.3:
     optionalDependencies:
       '@esbuild/aix-ppc64': 0.27.3
@@ -296,5 +350,15 @@ snapshots:
       '@esbuild/win32-arm64': 0.27.3
       '@esbuild/win32-ia32': 0.27.3
       '@esbuild/win32-x64': 0.27.3
+
+  esm-resolve@1.0.11: {}
+
+  gumnut@0.3.9: {}
+
+  he@1.2.0: {}
+
+  mime@2.6.0: {}
+
+  mri@1.2.0: {}
 
   undici-types@7.18.2: {}
