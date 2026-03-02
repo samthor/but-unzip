@@ -1,4 +1,4 @@
-import { unzip } from '../src/index.js';
+import { unzip } from '../index.node.min.mjs';
 import * as fs from 'node:fs';
 import test from 'node:test';
 import * as assert from 'node:assert';
