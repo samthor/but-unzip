@@ -4,8 +4,10 @@ small unzip library.
 ~666 bytes for Node 😈,
 and ~755^ bytes for browsers, _before_ gzip.
 
-^95%+ of browsers support [the decompression API](https://caniuse.com/mdn-api_decompressionstream), which in 2026, is probably all your users.
-If you _really_ care about the last 5%, you can dynamically import `pako`, adding ~20k: see below.
+^95% of browsers support [the decompression API](https://caniuse.com/mdn-api_decompressionstream), which in 2026, is effectively all your users.
+<small>
+For niche use cases, you should import `pako`.
+</small>
 
 ## Usage
 
@@ -37,7 +39,9 @@ for (const entry of iter(bytes)) {
 }
 ```
 
-### Provide inflate function
+Just like that!
+
+#### Provide inflate function
 
 If you're worried about maximum compatibility, add `pako` as a dependency and include its `inflateRaw` method:
 
@@ -51,19 +55,14 @@ async function decompressUint8Array(zipBytes) {
 }
 ```
 
-But again, this is for 5% of users in browsers: ancient Safari, IE11 and so on.
+Again, this is for a tiny minority of users who can't practically use the modern web _anyway_.
 
-## Limitations
+## Notes
 
 * This library doesn't support ZIP64.
   However, your browser (and Node) will likely not be happy to work with 4gb+ files, especially as this is not a streaming library (it just gives everything at once).
 
 * Like literally every zip library that exists, this only supports compression types 0 (store) and 8 (deflate).
-
-## Notes
-
-* In my testing with `esbuild`, Pako's ESM bundling can be a bit broken, so importing "pako/lib/inflate.js" adds ~20k.
-  Importing `pako` wholesale, even if you only use `inflateRaw`, adds ~45k.
 
 * If you're handling user data and it could be really big, use a `Worker`.
   But also, the compression API is `async` and doesn't block your main thread.
