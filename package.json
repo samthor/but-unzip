@@ -20,7 +20,7 @@
   },
   "type": "module",
   "name": "but-unzip",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "tiny (<1k) unzip for node/browser",
   "scripts": {
     "test": "node --test",
@@ -36,8 +36,5 @@
   "bugs": {
     "url": "https://github.com/samthor/but-unzip/issues"
   },
-  "homepage": "https://github.com/samthor/but-unzip#readme",
-  "dependencies": {
-    "dhost": "^0.3.5"
-  }
+  "homepage": "https://github.com/samthor/but-unzip#readme"
 }
